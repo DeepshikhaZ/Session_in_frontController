@@ -1,16 +1,26 @@
 package com.lnt.web.servlets;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+//Document Object
+import com.itextpdf.text.Document;
+//For adding content into PDF document
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.text.DocumentException;
+//import com.lnt.core.daos.OutputStream;
 import com.lnt.core.entities.Employee;
 import com.lnt.core.exceptions.EmpException;
 import com.lnt.core.services.EmpService;
@@ -76,9 +86,21 @@ public class FrontController extends HttpServlet {
 				break;
 			}
 			case "GetEmpList":{
+			    
 				List<Employee> empList=service.getEmpList();
 				request.setAttribute("List", empList);
 				jspName="List";
+				break;
+			}
+			case "GetEmpListpdf":{
+			    /*response.setContentType("application/pdf;charset=UTF-8");
+			    ServletOutputStream out = response.getOutputStream();
+				//List<Employee> empList=service.getEmpList();
+				
+				ByteArrayOutputStream baos = GeneratePdf.getPdfFile(empList);
+		        baos.writeTo(out);
+				jspName="List";*/
+				generatePdf(request,response);
 				break;
 			}
 			case "MainMenu":{
@@ -90,6 +112,8 @@ public class FrontController extends HttpServlet {
 				break;
 			}
 			case "getEmpDetails":{
+			
+		     
 				String strEmpNo = request.getParameter("empNo");
 				int empNo = Integer.parseInt(strEmpNo);
 				Employee emp = service.getEmpDetails(empNo);
@@ -98,6 +122,7 @@ public class FrontController extends HttpServlet {
 				jspName="GetEmpDetails";//show EMP details wala method
 				break;
 			}
+			
 			default:{
 				request.setAttribute("errmsg","Wrong/Unknown command");
 jspName="Error";
@@ -112,6 +137,49 @@ jspName="Error";
 		}
 		 dispatch=request.getRequestDispatcher(preFix + jspName + postFix);
 		dispatch.include(request,response);
+	}
+
+
+	private void generatePdf(HttpServletRequest request, HttpServletResponse response) {
+		//Set content type to application / pdf
+        //browser will open the document only if this is set
+        response.setContentType("application/pdf");
+        //Get the output stream for writing PDF object        
+        ServletOutputStream out=null;
+      
+		try {
+			out = response.getOutputStream();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        try {
+        	List<Employee> empList=service.getEmpList();
+        	  Iterator<Employee> itr = empList.iterator();
+            Document document = new Document();
+            document.open();
+            /* Basic PDF Creation inside servlet */
+            while(itr.hasNext()) {
+            PdfWriter.getInstance(document, out);
+            
+            document.add(new Paragraph(empList.empNm));
+            }
+            document.close();
+        }
+          catch (Exception exc){
+                exc.printStackTrace();
+              
+                }
+        finally {            
+            try {
+				out.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+        }
+		
+		
 	}
 
 

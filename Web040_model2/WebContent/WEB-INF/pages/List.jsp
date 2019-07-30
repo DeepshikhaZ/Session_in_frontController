@@ -29,6 +29,9 @@
 		                                                                       
 		
 		</table>
+		<br>
+		<a href="GetEmpListpdf.do">Generate pdf</a>
+	
 		
 </body>
 </html>
